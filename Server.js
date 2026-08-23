@@ -13,6 +13,8 @@ const authUser = require("./Middleware/AdminMiddleware")
 
 const app = express()
 
+
+const PORT = process.env.PORT || 8000;
 app.use(
     cors({
         origin: "http://localhost:5173",
@@ -21,7 +23,7 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); 
+app.use(cookieParser());
 
 // Routes
 app.use("/admin", UserRoute)
@@ -31,7 +33,6 @@ app.use("/student", StudentRoute)
 connectDB()
 
 
-
-app.listen(8000, () => {
-    console.log("Server Started...", 8000);
-})
+app.listen(PORT, () => {
+    console.log(`Server started on ${PORT}`);
+});
