@@ -16,7 +16,8 @@ const app = express()
 
 const PORT = process.env.PORT || 8000;
 app.use(cors({
-    origin: "https://quiz-system-ui-services.onrender.com",
+    origin: "http://localhost:5173",
+    // origin: "https://quiz-system-ui-services.onrender.com",
     credentials: true
 }));
 app.use(express.json());
