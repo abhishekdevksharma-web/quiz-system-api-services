@@ -113,7 +113,11 @@ router.post("/login", async (req, res) => {
 
         if (findUser) {
             const token = setUser(findUser._id)
-            res.cookie("token", token);
+            res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+});
             res.status(200).json({ findUser, status: true })
         } else {
             res.status(400).json({ status: false })
