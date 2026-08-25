@@ -3,7 +3,7 @@ const User = require("../Models/User")
 const authUser = async (req, res, next) => {
     const { token } = req.cookies
 
-    
+    console.log("token",token)
     
     if (!token) {
         return res.status(401).json({ loginStatus: false, error: "Unauthorized" });
