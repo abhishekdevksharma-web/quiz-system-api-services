@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser")
 
 const UserRoute = require("./Routes/Quiz")
 const StudentRoute = require("./Routes/Student")
+const AuthRoute = require("./Routes/Auth")
 
 const connectDB = require("./Config/db")
 
@@ -16,8 +17,7 @@ const app = express()
 
 const PORT = process.env.PORT || 8000;
 app.use(cors({
-    origin: "http://localhost:5173",
-    // origin: "https://quiz-system-ui-services.onrender.com",
+    origin: process.env.VITE_APP_URL,
     credentials: true
 }));
 app.use(express.json());
@@ -27,6 +27,7 @@ app.use(cookieParser());
 // Routes
 app.use("/admin", UserRoute)
 app.use("/student", StudentRoute)
+app.use("/api/auth", AuthRoute)
 
 // Connect Database
 connectDB()

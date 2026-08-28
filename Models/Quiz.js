@@ -39,7 +39,7 @@ const quizSchema = new mongoose.Schema(
                 default: null,
             },
         },
-        closeIn: {
+        userTimeLimit: {
             type: Number
         },
         totalQuestions: {
@@ -91,6 +91,32 @@ const quizSchema = new mongoose.Schema(
                 },
             },
         ],
+        securityCheckType: {
+            autoSubmitOnChromeClose: {
+                type: Boolean,
+                default: true,
+            },
+            autoSubmitOnMinimize: {
+                type: Boolean,
+                default: true,
+            },
+            autoSubmitOnNewTab: {
+                type: Boolean,
+                default: false,
+            },
+            autoSubmitOnOtherApp: {
+                type: Boolean,
+                default: true,
+            },
+            fullscreenRequired: {
+                type: Boolean,
+                default: false,
+            },
+            ignoreResize: {
+                type: Boolean,
+                default: true,
+            },
+        },
         // negativeMarking: {
         //     enabled: Boolean,
         //     marks: Number,

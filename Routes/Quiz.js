@@ -6,18 +6,33 @@ const QuizResponse = require('../Models/Responce')
 
 const authUser = require("../Middleware/AdminMiddleware")
 const { setUser } = require("../auth/User");
+const TokenSchema = require("../Models/Token");
+const { default: mongoose } = require("mongoose");
 
 require("dotenv").config();
 
 const router = express.Router()
 
 router.post("/createquiz", authUser, async (req, res) => {
+    const session = await mongoose.startSession();
+
     try {
-        const quizMeta = req.body
+        session.startTransaction();
 
-        const { title, subject, difficulty, totalQuestions, timing, tag, status, attempts } = req.body
+        const quizMeta = req.body;
 
-        const created = await UserQuiz.create({
+        const {
+            title,
+            subject,
+            difficulty,
+            totalQuestions,
+            timing,
+            tag,
+            status,
+            attempts
+        } = req.body;
+
+        const created = await UserQuiz.create([{
             title,
             subject,
             difficulty,
@@ -25,48 +40,73 @@ router.post("/createquiz", authUser, async (req, res) => {
             totalQuestions,
             tag,
             status,
+            attempts,
             isActive: true,
-            createdBy: req.user.findedUser._id,
+            createdBy: req.user.findedUser?._id,
             questions: quizMeta.questions.questions
-        })
+        }], { session });
 
+        const quiz = created[0];
 
         const updatedUser = await User.findByIdAndUpdate(
-            req.user.findedUser._id,
+            req.user.findedUser?._id,
             {
                 $inc: {
                     totalQuizs: 1
                 },
                 $push: {
                     recentQuizzes: {
-                        $each: [created._id],
+                        $each: [quiz._id],
                         $position: 0,
-                        $slice: 5,
-                    },
-                    quizzes: created._id
+                        $slice: 5
+                    }
                 }
             },
+            { session, new: true }
         );
 
-        res.status(201).json({
+        if (!updatedUser) {
+            throw new Error("User not found");
+        }
+
+        await session.commitTransaction();
+
+        return res.status(201).json({
             success: true,
-            message: "Quiz created successfully", data: created._id
+            message: "Quiz created successfully",
+            _id: quiz._id
         });
+
     } catch (error) {
-        console.log(error)
-        res.end()
+
+        console.error("Create quiz error:", error);
+
+        await session.abortTransaction();
+
+        if (error.message === "User not found") {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to create quiz"
+        });
+
+    } finally {
+        session.endSession();
     }
 
 })
 
 router.get("/fetchallquiz", authUser, async (req, res) => {
-    const user = await User
-        .findById(req.user.findedUser._id)
-        .populate("quizzes");
 
-    const allQuiz = user.quizzes;
 
-    res.status(200).json(allQuiz)
+    const userQuizess = await UserQuiz.find({ createdBy: req.user.findedUser._id })
+
+    res.status(200).json(userQuizess)
 })
 
 router.get("/dashbord", authUser, async (req, res) => {
@@ -108,16 +148,36 @@ router.post("/login", async (req, res) => {
 
         const { email, password } = req.body
 
-        const findUser = await User.findOne({ email, password });
+        const findUser = await User.findOne({ email, password }, 'name email _id'); 
 
-
-        if (findUser) {
-            const token = setUser(findUser._id)
-            res.cookie("token", token);
-            res.status(200).json({ findUser, status: true })
-        } else {
+        if (!findUser) {
             res.status(400).json({ status: false })
         }
+
+        const payload = {
+            userId: findUser._id.toString(),
+            name: findUser.name,
+            email: findUser.email
+        }
+        const token = setUser(payload)
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+        await TokenSchema.create({
+            userId: findUser._id,
+            token,
+            expiresAt,
+            isValid: true,
+        });
+
+
+        res.cookie("Access-Token", token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: expiresAt
+        });
+
+        res.status(200).json({ findUser, status: true })
+
 
     } catch (error) {
         console.log(error);
@@ -182,5 +242,42 @@ router.post("/quiz-responce-results", async (req, res) => {
         });
     }
 })
+router.patch("/update-quiz-settings", authUser, async (req, res) => {
+    try {
+        const { defaultSecurityChecks, timeLimit, quizId
+        } = req.body;
+
+        const updatedQuiz = await UserQuiz.findByIdAndUpdate(
+            quizId,
+            {
+                $set: {
+                    securityCheckType: defaultSecurityChecks, userTimeLimit: timeLimit
+                },
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
+
+        if (!updatedQuiz) {
+            return res.status(404).json({
+                success: false,
+                message: "Quiz not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Timing status updated successfully",
+            quiz: updatedQuiz,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+});
 
 module.exports = router

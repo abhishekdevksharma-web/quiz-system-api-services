@@ -31,18 +31,11 @@ const userSchema = new mongoose.Schema(
                 ref: "UserQuiz",
             },
         ],
-
-        quizzes: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "UserQuiz",
-            },
-        ],
     },
     {
         timestamps: true,
     }
 );
- 
+
 
 module.exports = mongoose.model("User", userSchema);
