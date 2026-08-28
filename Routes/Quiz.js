@@ -148,7 +148,7 @@ router.post("/login", async (req, res) => {
 
         const { email, password } = req.body
 
-        const findUser = await User.findOne({ email, password }, 'name email _id'); 
+        const findUser = await User.findOne({ email, password }, 'name email _id');
 
         if (!findUser) {
             res.status(400).json({ status: false })
@@ -172,8 +172,8 @@ router.post("/login", async (req, res) => {
         res.cookie("Access-Token", token, {
             httpOnly: true,
             secure: true,
-            sameSite: "lax",
-            maxAge: expiresAt
+            sameSite: "none",
+            maxAge: expiresAt,
         });
 
         res.status(200).json({ findUser, status: true })
