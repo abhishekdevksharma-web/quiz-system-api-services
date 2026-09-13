@@ -21,6 +21,7 @@ router.post("/createquiz", authUser, async (req, res) => {
 
         const quizMeta = req.body;
 
+
         const {
             title,
             subject,
@@ -29,7 +30,7 @@ router.post("/createquiz", authUser, async (req, res) => {
             timing,
             tag,
             status,
-            attempts
+            attempts, securityCheckType, userTimeLimit
         } = req.body;
 
         const created = await UserQuiz.create([{
@@ -41,10 +42,11 @@ router.post("/createquiz", authUser, async (req, res) => {
             tag,
             status,
             attempts,
-            isActive: true,
-            createdBy: req.user.findedUser?._id,
-            questions: quizMeta.questions.questions
+            isActive: true, securityCheckType, userTimeLimit,
+            createdBy: { name: req.user.findedUser?.name, id: req.user.findedUser?._id },
+            questions: quizMeta.questions
         }], { session });
+
 
         const quiz = created[0];
 
@@ -104,7 +106,7 @@ router.post("/createquiz", authUser, async (req, res) => {
 router.get("/fetchallquiz", authUser, async (req, res) => {
 
 
-    const userQuizess = await UserQuiz.find({ createdBy: req.user.findedUser._id })
+    const userQuizess = await UserQuiz.find({ "createdBy.id": req.user.findedUser._id })
 
     res.status(200).json(userQuizess)
 })
@@ -145,7 +147,6 @@ router.post("/createuser", async (req, res) => {
 })
 router.post("/login", async (req, res) => {
     try {
-
         const { email, password } = req.body
 
         const findUser = await User.findOne({ email, password }, 'name email _id');
@@ -227,7 +228,7 @@ router.post("/quiz-responce-results", async (req, res) => {
         const { quizId } = req.body
 
         const students = await QuizResponse.find({ quizId },
-            "quizId student submittedInSec totalMarks obtainMarks quizDuration")
+            "quizId student submittedInSec totalMarks obtainMarks quizDuration percentage quizTotalMarks")
 
         res.status(200).json({
             status: true,

@@ -26,7 +26,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/admin", UserRoute)
-app.use("/student", StudentRoute)
+app.use("/api/student", StudentRoute)
 app.use("/api/auth", AuthRoute)
 
 // Connect Database

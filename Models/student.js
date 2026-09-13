@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const studentSchema = new mongoose.Schema(
     {
         name: {
             type: String,
             required: true,
+            trim: true,
         },
 
         email: {
@@ -14,7 +15,15 @@ const userSchema = new mongoose.Schema(
             lowercase: true,
             trim: true,
         },
-        
+
+        password: {
+            type: String,
+            required: true,
+        },
+        role: {
+            type: String, default: "student"
+        },
+
         info: {
             roll: {
                 type: String,
@@ -33,36 +42,22 @@ const userSchema = new mongoose.Schema(
             },
         },
 
-        role: {
-            type: String, default: "creator"
+        recentQuiz: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "UserQuiz",
+            default: null,
         },
 
-        password: {
-            type: String,
-            required: true,
-        },
-
-        totalQuizs: {
-            type: Number,
-            default: 0,
-        },
-
-        recentQuizzes: [
+        quizHistory: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "UserQuiz",
             },
         ],
-        recentAttemptQuiz: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "UserQuiz",
-            default: null,
-        }
     },
     {
         timestamps: true,
-    }
-);
+    },
+)
 
-
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Student", studentSchema);

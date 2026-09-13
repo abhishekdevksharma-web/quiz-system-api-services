@@ -1,5 +1,7 @@
 const express = require("express");
 const authUser = require("../Middleware/AdminMiddleware");
+const User = require("../Models/User");
+const student = require("../Models/student");
 const router = express.Router()
 
 router.get('/verify-token', authUser, async (req, res) => {
@@ -24,11 +26,13 @@ router.get('/verify-token', authUser, async (req, res) => {
         });
     }
 })
+
+
 router.post("/logout", (req, res) => {
     res.clearCookie("Access-Token", {
         httpOnly: true,
         sameSite: "lax",
-        secure: false, // production me true
+        secure: true, // production me true
     });
 
     return res.status(200).json({

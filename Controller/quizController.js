@@ -1,32 +1,71 @@
-const UserQuiz = require("../Models/Quiz")
+const UserQuiz = require("../Models/Quiz");
+
+async function validateQuizAnswer(data, userQuiz) {
+    let obtainMarks = 0;
+    let quizTotalMarks = 0;
+
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let notAnswered = 0;
+
+    const validatedAnswer = [];
+    console.log(userQuiz);
 
 
-async function validateQuizAnswer(data) {
-    let obtainMarks = 0
-    let totalMarks = 0
-    const validatedAnswer = []
+    userQuiz.questions.forEach((question) => {
+        quizTotalMarks += question.marks;
 
-    const userQuiz = await UserQuiz.findById(data.quizId)
+        data.answer.forEach((answer) => {
+            if (
+                question._id.toString() === answer.questionId.toString()
+            ) {
+                const {
+                    questionText,
+                    selectAnswerIndex,
+                    ...rest
+                } = answer;
 
-    userQuiz.questions.forEach(item => {
-        data.answer.forEach(item1 => {
-            if (item.questionText === item1.questionText) {
-                totalMarks += 1
+                const isNotAnswered = answer.status === "unanswered";
+
+                const isCorrect =
+                    !isNotAnswered &&
+                    question.correctOptionIndex?.toString() ===
+                    answer.selectAnswerIndex.toString();
+
                 validatedAnswer.push({
-                    questionId: item1.id,
-                    selectedOption: item1.selectAnswerIndex,
-                    isCorrect: item.correctOptionIndex == item1.selectAnswerIndex,
-                })
-                if (item.correctOptionIndex == item1.selectAnswerIndex) {
-                    obtainMarks += 1
+                    ...rest,
+                    questionId: answer.questionId,
+                    selectedOption: answer.selectAnswerIndex,
+                    isCorrect,
+                });
+
+                if (isNotAnswered) {
+                    notAnswered++;
+                } else if (isCorrect) {
+                    correctAnswers++;
+                    obtainMarks += question.marks;
+                } else {
+                    wrongAnswers++;
                 }
-            } else {
-
             }
-
-        })
+        });
     });
-    return { validatedAnswer, obtainMarks, totalMarks }
+
+    // Calculate percentage
+    const percentage =
+        quizTotalMarks > 0
+            ? Math.round((obtainMarks / quizTotalMarks) * 100)
+            : 0;
+
+    return {
+        validatedAnswer,
+        obtainMarks,
+        quizTotalMarks,
+        percentage,
+        correctAnswers,
+        wrongAnswers,
+        notAnswered,
+    };
 }
 
-module.exports = validateQuizAnswer
+module.exports = validateQuizAnswer;

@@ -6,6 +6,24 @@ const responseSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        quizMeta: {
+            title: {
+                type: String,
+                required: true,
+            },
+
+            subject: {
+                type: String,
+                required: true,
+            },
+            createdBy: {
+                name: {
+                    type: String,
+                    required: true,
+                },
+            },
+
+        },
 
         student: {
             name: {
@@ -15,7 +33,7 @@ const responseSchema = new mongoose.Schema(
 
             email: {
                 type: String,
-                required: true, 
+                required: true,
             },
 
             roll: {
@@ -42,8 +60,10 @@ const responseSchema = new mongoose.Schema(
 
         answer: [
             {
-                id: {
-                    type: Number,
+                _id: false,
+
+                questionId: {
+                    type: mongoose.Schema.Types.ObjectId,
                     required: true,
                 },
 
@@ -53,7 +73,16 @@ const responseSchema = new mongoose.Schema(
                 },
 
                 selectAnswerIndex: {
-                    type: Number,
+                    type: String,
+                    required: true,
+                },
+                status: {
+                    type: String,
+                    required: true,
+                },
+                flagged: {
+                    type: Boolean,
+                    default: false,
                     required: true,
                 },
             },
@@ -61,19 +90,22 @@ const responseSchema = new mongoose.Schema(
 
         validatedAnswer: [
             {
+                _id: false,
+
                 questionId: {
-                    type: String,
+                    type: mongoose.Schema.Types.ObjectId,
                     required: true,
                 },
 
                 selectedOption: {
-                    type: Number,
+                    type: String,
                     required: true,
                 },
                 isCorrect: {
                     type: Boolean,
                 }
-            }],
+            },
+            { _id: false }],
 
         quizDuration: {
             type: Number,
@@ -84,10 +116,26 @@ const responseSchema = new mongoose.Schema(
             type: Number,
             required: true,
         },
-        totalMarks: {
+        obtainMarks: {
+            required: true,
+            type: Number
+
+        },
+        quizTotalMarks: {
             type: Number
         },
-        obtainMarks: {
+        notAnswered: {
+            required: true,
+            type: Number
+        },
+        wrongQuestion: {
+            type: Number
+        },
+        correctAnswers: {
+            required: true,
+            type: Number
+        },
+        percentage: {
             required: true,
             type: Number
         }

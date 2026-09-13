@@ -58,8 +58,14 @@ const quizSchema = new mongoose.Schema(
         },
 
         createdBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            name: {
+                type: String
+            },
+            id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+
+            },
 
         },
 
@@ -94,11 +100,11 @@ const quizSchema = new mongoose.Schema(
         securityCheckType: {
             autoSubmitOnChromeClose: {
                 type: Boolean,
-                default: true,
+                default: false,
             },
             autoSubmitOnMinimize: {
                 type: Boolean,
-                default: true,
+                default: false,
             },
             autoSubmitOnNewTab: {
                 type: Boolean,
@@ -106,15 +112,11 @@ const quizSchema = new mongoose.Schema(
             },
             autoSubmitOnOtherApp: {
                 type: Boolean,
-                default: true,
+                default: false,
             },
             fullscreenRequired: {
                 type: Boolean,
                 default: false,
-            },
-            ignoreResize: {
-                type: Boolean,
-                default: true,
             },
         },
         // negativeMarking: {
